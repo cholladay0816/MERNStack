@@ -30,7 +30,7 @@ router.route('/:id').get((req,res) => {
     .catch(()=>res.status(400).json('Error: '+err));
 });
 //Edit Worklog //TODO: add session check
-router.route('/:id').put((req,res) => {
+router.route('/:id').post((req,res) => {
     const id = req.params.id;
     const hours = Number(req.body.hours);
     const date = Date.parse(req.body.date);

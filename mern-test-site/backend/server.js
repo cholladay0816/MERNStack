@@ -4,6 +4,8 @@ const session = require('express-session');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+var genuuid = require('uid-safe')
+
 require('dotenv').config();
 
 //Init
@@ -12,6 +14,18 @@ const port = process.env.PORT | 5000;
 //Bind to express
 app.use(cors());
 app.use(express.json());
+
+//Establish session
+var sess = {
+    secret: 'keyboard cat',
+    cookie: {maxAge: 30 * 24 * 60 * 60 * 1000}
+}
+
+if (app.get('env') === 'production') {
+    app.set('trust proxy', 1) // trust first proxy
+    sess.cookie.secure = true // serve secure cookies
+}
+app.use(session(sess))
 
 //Connect to Database
 const uri = process.env.ATLAS_URI;
@@ -25,7 +39,9 @@ connection.once('open', () => {
 //Setup Routes
 const worklogRouter = require('./routes/worklog');
 const userRouter = require('./routes/user');
+const homeRouter = require('./routes/home');
 
+app.use('/', homeRouter);
 app.use('/worklog', worklogRouter);
 app.use('/user', userRouter);
 

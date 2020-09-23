@@ -24,7 +24,7 @@ router.route('/register').post((req,res) => {
     const position = req.body.position;
     const firstname = req.body.firstname;
     const lastname = req.body.lastname;
-    const dob = req.body.dob;
+    const dob = Date.parse(req.body.dob);
     const sentPass = req.body.password;
     const bio = req.body.bio;
 

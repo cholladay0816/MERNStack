@@ -29,6 +29,7 @@ router.route('/register').post((req,res) => {
     const dob = Date.parse(req.body.dob);
     const sentPass = req.body.password;
     const bio = req.body.bio;
+    
     //Hash the password
     bcrypt.hash(sentPass, saltRounds, function(err, password) {
         if(err)
@@ -41,7 +42,7 @@ router.route('/register').post((req,res) => {
             .then(()=> {
                 req.session.user = newUser;
                 res.json('User added!');
-        })
+            })
             .catch(err=>res.status(400).json('Error: '+err));
     });
 });

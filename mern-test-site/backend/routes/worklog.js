@@ -3,14 +3,19 @@ let Worklog = require('../models/worklog.model');
 
 //Test, views all worklogs
 router.route('/').get((req,res) => {
-    Worklog.find()
+    const username = req.session.user.username;
+    Worklog.find({'username':username})
     .then(worklogs => res.json(worklogs))
     .catch(err => res.status(400).json('Error: '+err));
 });
 
-//Add Worklog Post //TODO: add session check
+//Add Worklog Post
 router.route('/add').post((req,res) => {
-    const username = req.body.username;
+    if(!req.session.user)
+    {
+        return res.status(400).json('Error: must be logged in.');
+    }
+    const username = req.session.user.username;
     const hours = Number(req.body.hours);
     const date = Date.parse(req.body.date);
     const description = req.body.description;
@@ -21,31 +26,72 @@ router.route('/add').post((req,res) => {
         .then(() => res.json('Worklog Added!'))
         .catch(() => res.status(400).json('Error: '+err));
 });
-//View Worklog //TODO: add session check
+//View Worklog 
 router.route('/:id').get((req,res) => {
+    if(!req.session.user)
+    {
+        return res.status(400).json('Error: must be logged in.');
+    }
+    const username = req.session.user.username;
     const id = req.params.id;
-
-    Worklog.findById(id)
-    .then((worklog)=> res.json(worklog))
+    
+    Worklog.findOne({"_id":id, "username":username})
+    .then((worklog)=> {
+        if(worklog)
+        {
+            res.json(worklog);
+        }
+        else
+        {
+            res.status(400).json('Error: Access Denied')
+        }
+    })
     .catch(()=>res.status(400).json('Error: '+err));
 });
-//Edit Worklog //TODO: add session check
+//Edit Worklog
 router.route('/:id').post((req,res) => {
+    if(!req.session.user)
+    {
+        return res.status(400).json('Error: must be logged in.');
+    }
+    const username = req.session.user.username;
     const id = req.params.id;
     const hours = Number(req.body.hours);
     const date = Date.parse(req.body.date);
     const description = req.body.description;
     
-    Worklog.findByIdAndUpdate(id, {hours, date, description})
-    .then((worklog)=> res.json('Worklog Updated!'))
+    Worklog.findOneAndUpdate({'username': username, '_id' : id}, {hours, date, description})
+    .then((worklog)=> {
+        if(worklog)
+        {
+            return res.json('Worklog Updated!');
+        }
+        else
+        {
+            return res.status(400).json('Error: Access Denied');
+        }
+    })
     .catch(()=>res.status(400).json('Error: '+err));
 });
-//Remove Worklog //TODO: add session check
+//Remove Worklog
 router.route('/:id').delete((req,res) => {
+    if(!req.session.user)
+    {
+        return res.status(400).json('Error: must be logged in.');
+    }
+    const username = req.session.user.username;
     const id = req.params.id;
-
-    Worklog.findByIdAndDelete(id)
-    .then((worklog)=> res.json('Worklog Removed!'))
+    Worklog.findOneAndDelete({"_id":id, "username":username})
+    .then((worklog)=> {
+        if(worklog)
+        {
+            res.json('Worklog Removed!');
+        }
+        else 
+        {
+            res.status(400).json('Error: Access Denied');
+        }
+    })
     .catch(()=>res.status(400).json('Error: '+err));
 });
 
